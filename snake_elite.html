@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Snake Elite 🐍 — AutomateIQ Labs</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#050505;color:#fff;font-family:'Courier New',monospace;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;overflow:hidden;user-select:none;}
+
+#wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px}
+#hud-top{display:flex;justify-content:space-between;align-items:center;
+  width:100%;font-size:12px;color:#aaa;gap:6px;padding:0 2px}
+canvas{display:block;border:2px solid #1a3a1a;box-shadow:0 0 30px #00ff4433;image-rendering:pixelated}
+#hud-bot{display:flex;align-items:center;gap:8px;width:100%;padding:0 2px}
+#el-lives{font-size:14px;white-space:nowrap;min-width:58px}
+#fbar-bg{flex:1;height:10px;background:#111;border:1px solid #2a2a2a;border-radius:5px;overflow:hidden}
+#fbar{height:100%;background:linear-gradient(90deg,#00ff44,#ffee00);border-radius:5px;width:0%;transition:width .25s}
+#el-food{font-size:11px;color:#888;white-space:nowrap}
+#btn-pause{background:transparent;border:1px solid #333;color:#888;
+  font-family:'Courier New',monospace;font-size:11px;padding:2px 8px;cursor:pointer;white-space:nowrap}
+#btn-pause:hover{border-color:#00ff44;color:#00ff44}
+
+/* Brand footer */
+#brand-foot{font-size:10px;font-weight:bold;letter-spacing:3px;text-align:center;
+  padding:2px 0;color:#ffcc00;text-shadow:0 0 10px #ffcc0077}
+
+/* Screens */
+.scr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;background:rgba(3,3,3,.97);z-index:10;gap:10px;padding:18px}
+.hide{display:none!important}
+
+/* Game title */
+.T{font-size:2.4em;color:#00ff44;text-shadow:0 0 22px #00ff44,0 0 44px #00ff4466;
+  letter-spacing:6px;text-align:center;line-height:1.2;font-weight:bold}
+
+/* Brand name on screens */
+.brand-name{
+  display:flex;flex-direction:column;align-items:center;gap:2px;margin:2px 0}
+.brand-line{width:120px;height:1px;background:linear-gradient(90deg,transparent,#ffcc00,transparent)}
+.brand-text{
+  font-size:.82em;font-weight:bold;color:#ffcc00;letter-spacing:5px;
+  text-shadow:0 0 14px #ffcc00aa,0 0 28px #ffcc0055;padding:4px 10px;
+  text-align:center}
+
+.S{font-size:1.1em;color:#ffdd00;letter-spacing:2px;text-align:center}
+.btn{padding:9px 30px;background:transparent;border:2px solid #00ff44;color:#00ff44;
+  font-family:'Courier New',monospace;font-size:.85em;cursor:pointer;
+  letter-spacing:2px;transition:all .18s;min-width:164px;margin-top:2px}
+.btn:hover{background:#00ff4418;box-shadow:0 0 14px #00ff44}
+.err{color:#ff5555;font-size:.76em;min-height:1em;text-align:center}
+.inf{color:#3a3a3a;font-size:.72em;text-align:center;line-height:1.9}
+.ht{color:#ffdd00;font-size:.86em;letter-spacing:1px}
+input[type=password]{background:#080808;border:2px solid #00ff44;color:#00ff44;
+  font-family:'Courier New',monospace;font-size:1.5em;padding:8px 14px;
+  text-align:center;letter-spacing:10px;outline:none;width:156px;caret-color:#00ff44;border-radius:3px}
+input[type=password]:focus{box-shadow:0 0 14px #00ff4455}
+
+/* Overlays */
+#surprise{position:absolute;top:36%;left:50%;transform:translate(-50%,-50%);
+  background:#040404;border:2px solid #ffdd00;color:#ffdd00;padding:9px 20px;
+  font-size:.9em;z-index:20;text-align:center;box-shadow:0 0 28px #ffdd0044;
+  pointer-events:none;display:none;letter-spacing:1px;border-radius:4px}
+#pause-ov{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  color:#fff;font-size:1.5em;z-index:18;display:none;text-align:center;
+  letter-spacing:4px;pointer-events:none;text-shadow:0 0 18px #fff6}
+#lvl-flash{position:absolute;top:18%;left:50%;transform:translateX(-50%);
+  color:#00ff44;font-size:1em;z-index:19;display:none;letter-spacing:3px;
+  text-shadow:0 0 14px #00ff44;pointer-events:none;text-align:center}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="hud-top">
+    <span id="el-lv" style="color:#00ff44;font-weight:bold">LEVEL 1</span>
+    <span id="el-sc">SCORE: 0</span>
+    <span id="el-hi">HI: 0</span>
+    <button id="btn-pause">⏸ PAUSE</button>
+  </div>
+  <canvas id="cv"></canvas>
+  <div id="hud-bot">
+    <div id="el-lives">❤️❤️❤️</div>
+    <div id="fbar-bg"><div id="fbar"></div></div>
+    <div id="el-food">0/15</div>
+  </div>
+  <div id="brand-foot">⚡ AUTOMATEIQ LABS · SNAKE ELITE v1.0 ⚡</div>
+
+  <!-- PIN Screen -->
+  <div class="scr" id="s-pin">
+    <div class="T">🐍<br>SNAKE<br>ELITE</div>
+    <div class="brand-name">
+      <div class="brand-line"></div>
+      <div class="brand-text">AUTOMATEIQ LABS</div>
+      <div class="brand-line"></div>
+    </div>
+    <div class="S" style="margin-top:4px">🔒 ENTER PIN</div>
+    <input type="password" id="ip-pin" maxlength="4" placeholder="••••" autocomplete="off">
+    <button class="btn" onclick="doPin()">UNLOCK ▶</button>
+    <div class="err" id="er-pin"></div>
+    <p class="inf">© AutomateIQ Labs · All rights reserved</p>
+  </div>
+
+  <!-- Menu Screen -->
+  <div class="scr hide" id="s-mn">
+    <div class="T">🐍<br>SNAKE<br>ELITE</div>
+    <div class="brand-name">
+      <div class="brand-line"></div>
+      <div class="brand-text">AUTOMATEIQ LABS</div>
+      <div class="brand-line"></div>
+    </div>
+    <div class="ht" id="mn-hi" style="margin-top:4px">HIGH SCORE: 0</div>
+    <button class="btn" onclick="startGame()">▶ PLAY</button>
+    <button class="btn" onclick="showS('ht')" style="border-color:#555;color:#555">? HOW TO PLAY</button>
+    <p class="inf">Arrow / WASD · SPACE = Pause<br>20 Levels · 12 Surprise Events · Wall Wrap</p>
+  </div>
+
+  <!-- How To Screen -->
+  <div class="scr hide" id="s-ht">
+    <div class="S">📖 HOW TO PLAY</div>
+    <p class="inf" style="color:#555;max-width:280px;font-size:.75em">
+      🐍 Eat green food — grow &amp; advance<br>
+      💣 Avoid BOMB &amp; ☠️ POISON food<br>
+      🧱 Obstacles kill you instantly<br>
+      🌀 Portals = instant teleport<br>
+      ⚡ Speed increases every 4 food<br>
+      ❤️ 3 lives · die = restart that level<br>
+      🎁 Surprise events every 2 levels<br>
+      ⏸ SPACE key pauses the game<br><br>
+      <span style="color:#ffdd00">Goal: Clear all 20 levels!</span>
+    </p>
+    <button class="btn" onclick="showS('mn')">← BACK</button>
+  </div>
+
+  <!-- Level Complete -->
+  <div class="scr hide" id="s-lc">
+    <div class="S" id="lc-t">✅ LEVEL COMPLETE!</div>
+    <div id="lc-i" style="color:#666;font-size:.82em;text-align:center;line-height:2"></div>
+    <button class="btn" onclick="nextLevel()">NEXT LEVEL →</button>
+    <button class="btn" onclick="goMenu()" style="border-color:#444;color:#444;font-size:.78em">MENU</button>
+  </div>
+
+  <!-- Game Over -->
+  <div class="scr hide" id="s-go">
+    <div class="S" style="color:#ff4444;font-size:1.4em">💀 GAME OVER</div>
+    <div id="go-i" style="color:#666;font-size:.82em;text-align:center;line-height:2"></div>
+    <button class="btn" onclick="replayLevel()">↩ RETRY LEVEL</button>
+    <button class="btn" onclick="startGame()">⟳ NEW GAME</button>
+    <button class="btn" onclick="goMenu()" style="border-color:#444;color:#444;font-size:.78em">MENU</button>
+  </div>
+
+  <!-- Win -->
+  <div class="scr hide" id="s-wn">
+    <div class="T" style="color:#ffdd00;font-size:1.5em">🏆<br>YOU WIN!</div>
+    <div class="brand-name">
+      <div class="brand-line"></div>
+      <div class="brand-text">AUTOMATEIQ LABS</div>
+      <div class="brand-line"></div>
+    </div>
+    <div style="color:#ffaa00;letter-spacing:1px;font-size:.88em">ALL 20 LEVELS CLEARED!</div>
+    <div id="wn-i" style="color:#666;font-size:.82em;margin-top:4px"></div>
+    <button class="btn" style="border-color:#ffdd00;color:#ffdd00" onclick="startGame()">PLAY AGAIN</button>
+    <button class="btn" onclick="goMenu()">MENU</button>
+  </div>
+
+  <div id="surprise"></div>
+  <div id="pause-ov">⏸ PAUSED<br><span style="font-size:.38em;color:#555;letter-spacing:2px">PRESS SPACE TO RESUME</span></div>
+  <div id="lvl-flash"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  SNAKE ELITE  |  AutomateIQ Labs  |  v1.0
+//  Single HTML · Offline · Shareable
+// ══════════════════════════════════════════════════════
+
+// ── CONFIG (edit here freely) ─────────────────────────
+const GAME_PIN = '1147';
+const GW=30, GH=24;
+// ──────────────────────────────────────────────────────
+
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let CS=20;
+
+// ══ SOUND SYSTEM (Web Audio API — no files needed) ════
+let AC=null;
+function getAC(){
+  if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+  return AC;
+}
+function tone(freq,type,dur,vol,t0){
+  try{
+    const ac=getAC(); if(!ac)return;
+    if(ac.state==='suspended')ac.resume();
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    o.type=type||'sine';
+    const t=ac.currentTime+(t0||0);
+    o.frequency.setValueAtTime(freq,t);
+    g.gain.setValueAtTime(vol||0.3,t);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.start(t);o.stop(t+dur+0.01);
+  }catch(e){}
+}
+const SFX={
+  eat:      ()=>{tone(523,'sine',.09,.22);tone(784,'sine',.08,.16,.07);},
+  eatBig:   ()=>{tone(659,'sine',.12,.28);tone(880,'sine',.1,.2,.08);tone(1047,'sine',.08,.15,.15);},
+  die:      ()=>{[220,175,140,100].forEach((f,i)=>tone(f,'sawtooth',.22,.38,i*.11));},
+  lvlup:    ()=>{[523,659,784,880,1047].forEach((f,i)=>tone(f,'sine',.18,.3,i*.09));},
+  gameover: ()=>{[300,240,190,140,100].forEach((f,i)=>tone(f,'sawtooth',.22,.4,i*.13));},
+  surprise: ()=>{[900,600,800,500].forEach((f,i)=>tone(f,'square',.06,.18,i*.06));},
+  portal:   ()=>{tone(400,'sine',.04,.2);tone(900,'sine',.12,.18,.05);tone(400,'sine',.1,.12,.16);},
+  bomb:     ()=>{tone(150,'sawtooth',.35,.5);tone(80,'sine',.45,.4,.08);},
+  pause:    ()=>{tone(440,'square',.04,.12);},
+  shrink:   ()=>{[400,300,200].forEach((f,i)=>tone(f,'sine',.1,.2,i*.08));},
+  menu:     ()=>{[261,329,392].forEach((f,i)=>tone(f,'sine',.2,.18,i*.09));},
+  wall:     ()=>{tone(200,'sawtooth',.08,.15);},
+};
+
+// ══ STORAGE ═══════════════════════════════════════════
+const ls={
+  g:k=>{try{return localStorage.getItem(k)}catch(e){return null}},
+  s:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}
+};
+
+// ══ CANVAS ════════════════════════════════════════════
+function resize(){
+  CS=Math.floor(Math.min((window.innerWidth-26)/GW,(window.innerHeight-106)/GH));
+  CS=Math.max(10,Math.min(CS,26));
+  cv.width=GW*CS;cv.height=GH*CS;
+  const w=cv.width+'px';
+  ['hud-top','hud-bot','brand-foot'].forEach(id=>document.getElementById(id).style.width=w);
+  document.getElementById('wrap').style.maxWidth=(cv.width+6)+'px';
+}
+resize();window.addEventListener('resize',()=>{resize();if(G.running)render();});
+
+// ══ SCREENS ═══════════════════════════════════════════
+function showS(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.add('hide'));
+  if(id)document.getElementById('s-'+id).classList.remove('hide');
+}
+
+// ══ PIN ═══════════════════════════════════════════════
+function doPin(){
+  const v=document.getElementById('ip-pin').value.trim();
+  const er=document.getElementById('er-pin');
+  if(v===GAME_PIN){er.textContent='';SFX.menu();showS('mn');refreshHi();}
+  else{er.textContent='❌ Wrong PIN — try again!';document.getElementById('ip-pin').value='';}
+}
+document.getElementById('ip-pin').addEventListener('keydown',e=>{if(e.key==='Enter')doPin();});
+
+// ══ LEVEL TABLE ═══════════════════════════════════════
+// [foodNeeded, baseMs, staticObs, movingObs, themeColor, label]
+const LV=[
+  [15,200, 0, 0,'#00ff44','WELCOME'],     [15,186, 6, 0,'#00ee55','EASY WALLS'],
+  [16,174,11, 0,'#22ddaa','CORRIDORS'],   [16,163,16, 1,'#22ddaa','FIRST MOVER'],
+  [17,153,20, 1,'#eedd00','ZIGZAG PATH'], [17,144,25, 2,'#eedd00','CROSSFIRE'],
+  [17,136,29, 2,'#ffaa00','MAZE ENTRY'],  [18,129,34, 3,'#ffaa00','DEEP MAZE'],
+  [18,122,39, 3,'#ff6600','SPEED TRAP'],  [18,116,44, 4,'#ff6600','DUAL CHASE'],
+  [19,110,49, 4,'#ff4444','DANGER ZONE'], [19,104,54, 5,'#ff4444','RED ALERT'],
+  [19, 98,59, 5,'#ff44cc','PINK CHAOS'],  [20, 93,63, 6,'#ff44cc','FULL GRID'],
+  [20, 88,68, 6,'#aa44ff','PURPLE RAIN'], [20, 83,73, 7,'#aa44ff','PHANTOM'],
+  [20, 78,78, 8,'#4488ff','BLUE STORM'],  [20, 73,82, 8,'#4488ff','OVERLOAD'],
+  [20, 68,86, 9,'#aabbff','FINAL PUSH'],  [20, 62,90,10,'#ffffff','ELITE MODE'],
+];
+
+// ══ SURPRISES ═════════════════════════════════════════
+const SP=[
+  {id:'reverse', ic:'🔀',msg:'CONTROLS REVERSED!',  dur:7000},
+  {id:'burst',   ic:'⚡',msg:'SPEED BURST!',         dur:5500},
+  {id:'ghost',   ic:'👻',msg:'GHOST FOOD!',          dur:8000},
+  {id:'bomb',    ic:'💣',msg:'BOMBS INCOMING!',      dur:0},
+  {id:'blackout',ic:'🌑',msg:'BLACKOUT!',            dur:5000},
+  {id:'portal',  ic:'🌀',msg:'PORTALS ACTIVATED!',  dur:0},
+  {id:'double',  ic:'🍎',msg:'DOUBLE FOOD BONUS!',  dur:7000},
+  {id:'magnet',  ic:'🧲',msg:'MAGNETIC FOOD!',       dur:6500},
+  {id:'poison',  ic:'☠️', msg:'POISON FOOD ALERT!',   dur:0},
+  {id:'shrink',  ic:'📉',msg:'SNAKE SHRINKS!',       dur:0},
+  {id:'fog',     ic:'🌫️',msg:'FOG OF WAR!',          dur:6000},
+  {id:'zigzag',  ic:'〰️',msg:'ZIGZAG FOOD!',         dur:7000},
+];
+
+// ══ GAME STATE ════════════════════════════════════════
+const G={
+  lv:1,lives:3,score:0,hi:0,
+  snake:[],dir:{x:1,y:0},nd:{x:1,y:0},
+  food:[],obs:[],mobs:[],pts:[],portals:[],
+  ate:0,need:15,ms:200,curMs:200,
+  loopId:null,mobId:null,rafId:null,rafOn:false,
+  running:false,paused:false,
+  surp:null,surpT:null,usedS:[],lvSurp:null,
+  rev:false,blackout:false,dbl:false,ghost:false,fog:false,zz:false,
+};
+
+// ══ OBSTACLE GENERATOR ════════════════════════════════
+function genObs(lv,snake){
+  const cnt=LV[lv-1][2],obs=[],snSet=new Set(snake.map(s=>`${s.x},${s.y}`));
+  const ex=new Set(),pat=(lv-1)%5;
+  function addO(x,y){const k=`${x},${y}`;if(!ex.has(k)&&!snSet.has(k)){obs.push({x,y});ex.add(k);}}
+
+  if(pat===1&&lv>=2){
+    const g1=4+~~(Math.random()*(GW-10)),g2=4+~~(Math.random()*(GW-10));
+    for(let x=1;x<GW-1;x++){if(Math.abs(x-g1)>2)addO(x,7);if(Math.abs(x-g2)>2)addO(x,GH-8);}
+  }
+  if(pat===2&&lv>=5){
+    const cx=GW>>1,cy=GH>>1;
+    for(let i=-6;i<=6;i++){if(i!==0){addO(cx+i,cy);addO(cx,cy+i);}}
+  }
+  if(pat===3&&lv>=9){
+    const nb=Math.min(3,~~(lv/5));
+    for(let b=0;b<nb;b++){
+      const bx=3+~~(Math.random()*(GW-12)),by=3+~~(Math.random()*(GH-9));
+      for(let i=0;i<=5;i++){addO(bx+i,by);addO(bx+i,by+4);addO(bx,by+i);addO(bx+5,by+i);}
+    }
+  }
+  if(pat===4&&lv>=13){for(let i=2;i<GH-2;i++)addO((i*2+~~(Math.random()*2))%(GW-4)+2,i);}
+  if(pat===0&&lv>=16){
+    let x=2,y=2,dx=1,dy=0,step=GW-5;
+    for(let t=0;t<3;t++){for(let i=0;i<step;i++){addO(x,y);x+=dx;y+=dy;}[dx,dy]=[-dy,dx];step=Math.max(4,step-~~(step/2));}
+  }
+  let att=0;
+  while(obs.length<cnt&&att<1200){att++;
+    const x=1+~~(Math.random()*(GW-2)),y=1+~~(Math.random()*(GH-2));
+    if(x<=8&&Math.abs(y-GH/2)<=4)continue;addO(x,y);}
+  return obs;
+}
+function genMobs(lv,obs){
+  const cnt=LV[lv-1][3],oSet=new Set(obs.map(o=>`${o.x},${o.y}`));
+  const dirs=[{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}],mobs=[];
+  for(let i=0;i<cnt;i++){
+    let x,y,a=0;
+    do{x=4+~~(Math.random()*(GW-8));y=3+~~(Math.random()*(GH-6));a++;}
+    while((oSet.has(`${x},${y}`)||x<=9)&&a<400);
+    mobs.push({x,y,dir:dirs[~~(Math.random()*4)]});
+  }
+  return mobs;
+}
+
+// ══ FOOD ══════════════════════════════════════════════
+function occ(){return new Set([...G.snake,...G.obs,...G.mobs,...G.food,...G.portals].map(s=>`${s.x},${s.y}`));}
+function freeXY(){const o=occ();let x,y,a=0;do{x=1+~~(Math.random()*(GW-2));y=1+~~(Math.random()*(GH-2));a++;}while(o.has(`${x},${y}`)&&a<800);return{x,y};}
+function spawnFood(type='normal'){
+  const{x,y}=freeXY();
+  G.food.push({x,y,type,p:0,fx:x,fy:y,ghost:G.ghost&&type==='normal',
+    vx:G.zz?(Math.random()<.5?.42:-.42):0,vy:G.zz?(Math.random()<.5?.38:-.38):0});
+}
+function spawnPortals(){
+  G.portals=[];
+  [{c:'#aa44ff'},{c:'#ff44cc'}].forEach(({c})=>{const{x,y}=freeXY();G.portals.push({x,y,p:0,c});});
+}
+
+// ══ SURPRISES ═════════════════════════════════════════
+function pickSurp(){
+  const av=SP.filter(s=>!G.usedS.slice(-6).includes(s.id));
+  return av[~~(Math.random()*av.length)]||SP[~~(Math.random()*SP.length)];
+}
+function doSurp(s){
+  G.surp=s;G.usedS.push(s.id);SFX.surprise();banner(s.ic+'  '+s.msg);
+  switch(s.id){
+    case'reverse':  G.rev=true;break;
+    case'burst':    G.curMs=Math.max(55,G.curMs-50);restartLoop();break;
+    case'ghost':    G.ghost=true;G.food.forEach(f=>{if(f.type==='normal')f.ghost=true;});break;
+    case'bomb':     spawnFood('bomb');spawnFood('bomb');break;
+    case'blackout': G.blackout=true;break;
+    case'portal':   spawnPortals();break;
+    case'double':   G.dbl=true;spawnFood();spawnFood();break;
+    case'poison':   spawnFood('poison');spawnFood('poison');break;
+    case'shrink':   if(G.snake.length>5){G.snake.splice(~~(G.snake.length/2));SFX.shrink();}break;
+    case'fog':      G.fog=true;break;
+    case'zigzag':
+      G.zz=true;G.food.forEach(f=>{f.vx=Math.random()<.5?.42:-.42;f.vy=Math.random()<.5?.38:-.38;f.fx=f.x;f.fy=f.y;});break;
+  }
+  if(s.dur>0)G.surpT=setTimeout(()=>endSurp(s),s.dur);
+}
+function endSurp(s){
+  if(!G.surp||G.surp.id!==s.id)return;
+  switch(s.id){
+    case'reverse':  G.rev=false;break;
+    case'burst':    G.curMs=speedFromAte();restartLoop();break;
+    case'ghost':    G.ghost=false;G.food.forEach(f=>f.ghost=false);break;
+    case'blackout': G.blackout=false;break;
+    case'double':   G.dbl=false;break;
+    case'fog':      G.fog=false;break;
+    case'zigzag':   G.zz=false;G.food.forEach(f=>{f.vx=0;f.vy=0;});break;
+  }
+  G.surp=null;
+}
+function speedFromAte(){return Math.max(55,LV[G.lv-1][1]-~~(G.ate/4)*7);}
+function banner(msg,dur=2800){
+  const b=document.getElementById('surprise');b.textContent=msg;b.style.display='block';
+  clearTimeout(b._t);b._t=setTimeout(()=>b.style.display='none',dur);
+}
+function flashLvl(txt,col){
+  const f=document.getElementById('lvl-flash');f.textContent=txt;f.style.color=col||'#00ff44';f.style.display='block';
+  clearTimeout(f._t);f._t=setTimeout(()=>f.style.display='none',2200);
+}
+
+// ══ INIT LEVEL ════════════════════════════════════════
+function initLevel(lv){
+  stopLogic();stopRaf();
+  const[need,ms,,,th,label]=LV[lv-1],sy=GH>>1;
+  Object.assign(G,{lv,snake:[{x:6,y:sy},{x:5,y:sy},{x:4,y:sy}],
+    dir:{x:1,y:0},nd:{x:1,y:0},food:[],portals:[],pts:[],ate:0,
+    need,ms,curMs:ms,paused:false,running:true,
+    rev:false,blackout:false,dbl:false,ghost:false,fog:false,zz:false,surp:null});
+  if(G.surpT){clearTimeout(G.surpT);G.surpT=null;}
+  cv.style.boxShadow=`0 0 32px ${th}44`;cv.style.borderColor=th+'55';
+  document.getElementById('el-lv').style.color=th;
+  G.obs=genObs(lv,G.snake);G.mobs=genMobs(lv,G.obs);
+  G.lvSurp=(lv%2===0)?pickSurp():null;
+  spawnFood();updHUD();showS(null);
+  flashLvl(`LEVEL ${lv}  ·  ${label}`,th);
+  startLogic();startRaf();
+}
+
+// ══ LOOPS ═════════════════════════════════════════════
+function startLogic(){
+  G.loopId=setInterval(step,G.curMs);
+  if(G.mobs.length>0)G.mobId=setInterval(moveMobs,Math.max(110,460-G.lv*16));
+}
+function stopLogic(){clearInterval(G.loopId);clearInterval(G.mobId);G.loopId=G.mobId=null;G.running=false;}
+function restartLoop(){clearInterval(G.loopId);G.loopId=setInterval(step,G.curMs);}
+function startRaf(){if(G.rafOn)return;G.rafOn=true;(function rl(){if(!G.rafOn)return;render();G.rafId=requestAnimationFrame(rl);})();}
+function stopRaf(){G.rafOn=false;cancelAnimationFrame(G.rafId);G.rafId=null;}
+
+// ══ MOVING OBSTACLES ══════════════════════════════════
+function moveMobs(){
+  if(G.paused||!G.running)return;
+  const oSet=new Set(G.obs.map(o=>`${o.x},${o.y}`));
+  const snSet=new Set(G.snake.map(s=>`${s.x},${s.y}`));
+  let hit=false;
+  G.mobs.forEach(mob=>{
+    if(hit)return;
+    const nx=(mob.x+mob.dir.x+GW)%GW,ny=(mob.y+mob.dir.y+GH)%GH;
+    if(oSet.has(`${nx},${ny}`)||G.mobs.some(m=>m!==mob&&m.x===nx&&m.y===ny)){
+      const t=[{x:mob.dir.y,y:mob.dir.x},{x:-mob.dir.y,y:-mob.dir.x},{x:-mob.dir.x,y:-mob.dir.y}];
+      let ok=false;
+      for(const d of t){const px=(mob.x+d.x+GW)%GW,py=(mob.y+d.y+GH)%GH;
+        if(!oSet.has(`${px},${py}`)){mob.dir=d;mob.x=px;mob.y=py;ok=true;break;}}
+      if(!ok)mob.dir={x:-mob.dir.x,y:-mob.dir.y};
+    }else{mob.x=nx;mob.y=ny;}
+    if(snSet.has(`${mob.x},${mob.y}`)){hit=true;die();}
+  });
+}
+
+// ══ STEP ══════════════════════════════════════════════
+function step(){
+  if(G.paused||!G.running)return;
+  G.dir=G.nd;
+
+  if(G.surp&&G.surp.id==='magnet'){
+    const h=G.snake[0],blk=new Set([...G.obs,...G.mobs].map(o=>`${o.x},${o.y}`));
+    G.food.forEach(f=>{
+      if(f.type!=='normal'||Math.random()>.3)return;
+      const dx=Math.sign(h.x-f.x),dy=Math.sign(h.y-f.y),nx=f.x+dx,ny=f.y+dy;
+      if(nx>=0&&nx<GW&&ny>=0&&ny<GH&&!blk.has(`${nx},${ny}`)){f.x=nx;f.y=ny;f.fx=nx;f.fy=ny;}
+    });
+  }
+  if(G.zz){
+    G.food.forEach(f=>{
+      f.fx=(f.fx??f.x)+(f.vx??0);f.fy=(f.fy??f.y)+(f.vy??0);
+      if(f.fx<.6||f.fx>GW-1.6)f.vx*=-1;if(f.fy<.6||f.fy>GH-1.6)f.vy*=-1;
+      f.x=Math.round(f.fx);f.y=Math.round(f.fy);
+    });
+  }
+
+  let nh={x:(G.snake[0].x+G.dir.x+GW)%GW,y:(G.snake[0].y+G.dir.y+GH)%GH};
+
+  const pi=G.portals.findIndex(p=>p.x===nh.x&&p.y===nh.y);
+  if(pi!==-1){const o=G.portals[1-pi];nh={x:(o.x+G.dir.x+GW)%GW,y:(o.y+G.dir.y+GH)%GH};SFX.portal();banner('🌀 TELEPORTED!',900);}
+
+  const oSet=new Set([...G.obs,...G.mobs].map(o=>`${o.x},${o.y}`));
+  if(oSet.has(`${nh.x},${nh.y}`)){SFX.wall();die();return;}
+  if(G.snake.slice(0,-1).some(s=>s.x===nh.x&&s.y===nh.y)){SFX.wall();die();return;}
+
+  const fi=G.food.findIndex(f=>f.x===nh.x&&f.y===nh.y);
+  let grew=false,killed=false;
+  if(fi!==-1){
+    const ft=G.food[fi].type;G.food.splice(fi,1);
+    if(ft==='bomb'||ft==='poison'){killed=true;SFX.bomb();emit(nh.x,nh.y,'#ff2200',22);}
+    else grew=true;
+  }
+  G.snake.unshift(nh);
+  if(!grew)G.snake.pop();
+  if(killed){die();return;}
+
+  if(grew){
+    G.ate++;G.score+=10*G.lv*(G.dbl?2:1);
+    G.ate%8===0?SFX.eatBig():SFX.eat();
+    emit(nh.x,nh.y,LV[G.lv-1][4],14);
+    if(G.ate%4===0&&(!G.surp||G.surp.id!=='burst')){G.curMs=speedFromAte();restartLoop();}
+    if(G.lvSurp&&!G.surp&&G.ate===Math.floor(G.need*.4))doSurp(G.lvSurp);
+    if(!G.food.some(f=>f.type==='normal'))spawnFood();
+    if(G.dbl&&G.food.filter(f=>f.type==='normal').length<2)spawnFood();
+    updHUD();
+    if(G.ate>=G.need){lvDone();return;}
+  }
+  G.food.forEach(f=>f.p=(f.p||0)+.12);
+  G.portals.forEach(p=>p.p=(p.p||0)+.09);
+  G.pts=G.pts.filter(p=>p.l>0);
+  G.pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.055;p.l--;p.r=Math.max(0,p.r-.07);});
+}
+
+// ══ DIE / LEVEL DONE ══════════════════════════════════
+function die(){
+  stopLogic();if(G.surpT){clearTimeout(G.surpT);G.surpT=null;}
+  SFX.die();emit(G.snake[0].x,G.snake[0].y,'#ff4444',26);
+  G.lives--;
+  setTimeout(()=>{
+    stopRaf();
+    if(G.lives<=0){
+      SFX.gameover();saveHi();
+      document.getElementById('go-i').innerHTML=`Score: <b style="color:#fff">${G.score}</b> &nbsp;·&nbsp; Level: <b style="color:#fff">${G.lv}</b><br>Hi Score: <b style="color:#ffdd00">${Math.max(G.hi,G.score)}</b>`;
+      showS('go');
+    }else{
+      const lv=G.lv,li=G.lives,sc=G.score,hi=G.hi,us=G.usedS;
+      initLevel(lv);G.lives=li;G.score=sc;G.hi=hi;G.usedS=us;
+      flashLvl(`❤️ ${G.lives} LIVES LEFT`,LV[G.lv-1][4]);updHUD();
+    }
+  },780);
+}
+function lvDone(){
+  stopLogic();if(G.surpT){clearTimeout(G.surpT);G.surpT=null;}
+  SFX.lvlup();G.score+=50*G.lv;saveHi();stopRaf();
+  if(G.lv>=20){
+    document.getElementById('wn-i').innerHTML=`Final Score: <b style="color:#ffdd00">${G.score}</b> &nbsp;·&nbsp; Hi: <b>${G.hi}</b>`;
+    showS('wn');
+  }else{
+    document.getElementById('lc-t').textContent=`✅ LEVEL ${G.lv} COMPLETE!`;
+    document.getElementById('lc-i').innerHTML=
+      `Score: <b style="color:#fff">${G.score}</b> &nbsp;|&nbsp; Hi: <b style="color:#ffdd00">${G.hi}</b><br>Next: <b>Level ${G.lv+1}</b> — ${LV[G.lv][5]} · Need ${LV[G.lv][0]} food`;
+    showS('lc');
+  }
+}
+function saveHi(){G.hi=Math.max(G.hi,G.score);if(G.score>parseInt(ls.g('se_hi')||'0'))ls.s('se_hi',G.score);}
+function nextLevel(){G.lv++;initLevel(G.lv);}
+function replayLevel(){const l=G.lv,li=G.lives,s=G.score,h=G.hi;initLevel(l);G.lives=li;G.score=s;G.hi=h;updHUD();}
+function startGame(){G.lv=1;G.lives=3;G.score=0;G.hi=parseInt(ls.g('se_hi')||'0');G.usedS=[];initLevel(1);}
+function goMenu(){stopLogic();stopRaf();SFX.menu();showS('mn');refreshHi();}
+function refreshHi(){document.getElementById('mn-hi').textContent=`HIGH SCORE: ${ls.g('se_hi')||0}`;}
+
+// ══ PARTICLES ═════════════════════════════════════════
+function emit(gx,gy,col,n){
+  for(let i=0;i<n;i++){
+    const a=(Math.PI*2*i/n)+Math.random()*.6,sp=1.4+Math.random()*2.8;
+    G.pts.push({x:(gx+.5)*CS,y:(gy+.5)*CS,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1.4,col,r:2.5+Math.random()*3.5,l:22+~~(Math.random()*18)});
+  }
+}
+
+// ══ RENDER ════════════════════════════════════════════
+function render(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.fillStyle='#040404';ctx.fillRect(0,0,cv.width,cv.height);
+
+  // Grid dots
+  ctx.fillStyle='#0c0c0c';
+  for(let x=0;x<GW;x++)for(let y=0;y<GH;y++)ctx.fillRect(x*CS+CS/2-1,y*CS+CS/2-1,2,2);
+
+  // Fog of war
+  if(G.fog&&G.snake.length){
+    const h=G.snake[0],cx2=(h.x+.5)*CS,cy2=(h.y+.5)*CS;
+    const gr=ctx.createRadialGradient(cx2,cy2,CS*3,cx2,cy2,CS*7.5);
+    gr.addColorStop(0,'transparent');gr.addColorStop(1,'rgba(0,0,0,.94)');
+    ctx.fillStyle=gr;ctx.fillRect(0,0,cv.width,cv.height);
+  }
+
+  if(G.blackout){drawSnake();drawParticles();return;}
+
+  // ── Portals ──
+  G.portals.forEach(p=>{
+    const cx=(p.x+.5)*CS,cy=(p.y+.5)*CS,pulse=Math.sin(p.p)*2.5;
+    ctx.save();ctx.shadowColor=p.c;ctx.shadowBlur=20;
+    ctx.strokeStyle=p.c;ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.arc(cx,cy,CS/2-2+pulse,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle=p.c+'22';ctx.beginPath();ctx.arc(cx,cy,CS/2-4+pulse,0,Math.PI*2);ctx.fill();
+  });
+
+  // ── Static Obstacles (bright, clearly visible) ──
+  G.obs.forEach(o=>{
+    const x=o.x*CS,y=o.y*CS;
+    // Base block — solid bright green-gray
+    ctx.fillStyle='#2e6b2e';
+    rr(x+1,y+1,CS-2,CS-2,3);ctx.fill();
+    // Top-left highlight (3D bevel)
+    ctx.fillStyle='#4a9a4a';
+    rr(x+1,y+1,CS-2,4,2);ctx.fill();
+    rr(x+1,y+1,4,CS-2,2);ctx.fill();
+    // Bottom-right shadow
+    ctx.fillStyle='#1a3d1a';
+    rr(x+CS-5,y+1,4,CS-2,2);ctx.fill();
+    rr(x+1,y+CS-5,CS-2,4,2);ctx.fill();
+    // Inner dark recessed center
+    ctx.fillStyle='#183018';
+    rr(x+4,y+4,CS-8,CS-8,2);ctx.fill();
+    // Cross pattern — texture
+    ctx.fillStyle='#245a24';
+    ctx.fillRect(x+CS/2-1,y+5,2,CS-10);
+    ctx.fillRect(x+5,y+CS/2-1,CS-10,2);
+  });
+
+  // ── Moving Obstacles (orange glow, very visible) ──
+  G.mobs.forEach(o=>{
+    const x=o.x*CS,y=o.y*CS;
+    // Outer glow
+    ctx.save();ctx.shadowColor='#ff8800';ctx.shadowBlur=18;
+    ctx.fillStyle='#aa3300';rr(x+1,y+1,CS-2,CS-2,3);ctx.fill();
+    ctx.restore();
+    // Bright face
+    ctx.fillStyle='#ff6611';rr(x+2,y+2,CS-4,CS-4,3);ctx.fill();
+    // Highlight
+    ctx.fillStyle='#ff9944';rr(x+3,y+3,CS-6,5,2);ctx.fill();
+    // Direction arrow
+    const cx=x+CS/2,cy=y+CS/2,d=o.dir;
+    ctx.fillStyle='#ff3300';ctx.beginPath();
+    ctx.moveTo(cx+d.x*CS*.28,cy+d.y*CS*.28);
+    ctx.lineTo(cx+d.x*CS*.28-d.y*CS*.18-d.x*CS*.18,cy+d.y*CS*.28+d.x*CS*.18-d.y*CS*.18);
+    ctx.lineTo(cx+d.x*CS*.28+d.y*CS*.18-d.x*CS*.18,cy+d.y*CS*.28-d.x*CS*.18-d.y*CS*.18);
+    ctx.fill();
+  });
+
+  // ── Food ──
+  G.food.forEach(f=>{
+    if(f.ghost&&(~~(Date.now()/160)%3===0))return;
+    const cx=(f.x+.5)*CS,cy=(f.y+.5)*CS,r=CS/2-2+Math.sin(f.p)*2.2;
+    const col=f.type==='bomb'?'#ff2200':f.type==='poison'?'#bb00ee':
+               G.surp?.id==='magnet'?'#ffee00':'#00ff44';
+    ctx.save();ctx.shadowColor=col;ctx.shadowBlur=16;
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+    ctx.restore();
+    // Shine
+    ctx.fillStyle='rgba(255,255,255,.35)';
+    ctx.beginPath();ctx.arc(cx-r*.3,cy-r*.3,r*.35,0,Math.PI*2);ctx.fill();
+    if(f.type==='bomb')emo('💣',cx,cy);
+    else if(f.type==='poison')emo('☠',cx,cy);
+  });
+
+  drawSnake();drawParticles();
+}
+
+function drawSnake(){
+  const[,,,,th]=LV[G.lv-1];
+  G.snake.forEach((s,i)=>{
+    const x=s.x*CS,y=s.y*CS;
+    if(i===0){
+      ctx.save();ctx.shadowColor=th;ctx.shadowBlur=G.blackout?28:16;
+      ctx.fillStyle=th;rr(x+1,y+1,CS-2,CS-2,4);ctx.fill();ctx.restore();
+      // Shine
+      ctx.fillStyle='rgba(255,255,255,.25)';rr(x+3,y+3,CS-6,4,2);ctx.fill();
+      // Eyes
+      const d=G.dir,ex=x+CS/2,ey=y+CS/2,fw=CS*.27,sd=CS*.21;
+      ctx.fillStyle='#000';ctx.beginPath();
+      ctx.arc(ex+d.x*fw-d.y*sd,ey+d.y*fw+d.x*sd,Math.max(1.5,CS/8.5),0,Math.PI*2);
+      ctx.arc(ex+d.x*fw+d.y*sd,ey+d.y*fw-d.x*sd,Math.max(1.5,CS/8.5),0,Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.75)';ctx.beginPath();
+      ctx.arc(ex+d.x*fw-d.y*sd+.7,ey+d.y*fw+d.x*sd-.7,Math.max(.6,CS/18),0,Math.PI*2);
+      ctx.arc(ex+d.x*fw+d.y*sd+.7,ey+d.y*fw-d.x*sd-.7,Math.max(.6,CS/18),0,Math.PI*2);
+      ctx.fill();
+    }else{
+      const a=Math.max(.18,1-i/(G.snake.length*1.15));
+      ctx.fillStyle=th+(~~(a*255)).toString(16).padStart(2,'0');
+      if(G.blackout){ctx.save();ctx.shadowColor=th;ctx.shadowBlur=10;}
+      rr(x+2,y+2,CS-4,CS-4,3);ctx.fill();
+      if(G.blackout)ctx.restore();
+    }
+  });
+}
+function drawParticles(){
+  G.pts.forEach(p=>{ctx.globalAlpha=Math.min(1,p.l/16);ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();});
+  ctx.globalAlpha=1;
+}
+function rr(x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
+}
+function emo(e,cx,cy){ctx.font=`${Math.max(9,CS-8)}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';ctx.fillText(e,cx,cy);}
+
+// ══ HUD ═══════════════════════════════════════════════
+function updHUD(){
+  const[,,,,th]=LV[G.lv-1];
+  document.getElementById('el-lv').style.color=th;
+  document.getElementById('el-lv').textContent=`LV ${G.lv}`;
+  document.getElementById('el-sc').textContent=`SCORE: ${G.score}`;
+  document.getElementById('el-hi').textContent=`HI: ${Math.max(G.hi,parseInt(ls.g('se_hi')||'0'))}`;
+  document.getElementById('el-lives').textContent='❤️'.repeat(G.lives)+'🖤'.repeat(Math.max(0,3-G.lives));
+  document.getElementById('fbar').style.width=(G.ate/G.need*100).toFixed(1)+'%';
+  document.getElementById('el-food').textContent=`${G.ate}/${G.need}`;
+}
+
+// ══ PAUSE ═════════════════════════════════════════════
+function togglePause(){
+  if(!G.running)return;
+  G.paused=!G.paused;SFX.pause();
+  document.getElementById('pause-ov').style.display=G.paused?'block':'none';
+  document.getElementById('btn-pause').textContent=G.paused?'▶ RESUME':'⏸ PAUSE';
+}
+document.getElementById('btn-pause').addEventListener('click',togglePause);
+
+// ══ INPUT ═════════════════════════════════════════════
+const KM={ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0},
+  w:{x:0,y:-1},s:{x:0,y:1},a:{x:-1,y:0},d:{x:1,y:0},W:{x:0,y:-1},S:{x:0,y:1},A:{x:-1,y:0},D:{x:1,y:0}};
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'){e.preventDefault();togglePause();return;}
+  if(!G.running||G.paused)return;
+  let d=KM[e.key];if(!d)return;e.preventDefault();
+  if(G.rev)d={x:-d.x,y:-d.y};
+  if(d.x!==-G.dir.x||d.y!==-G.dir.y)G.nd=d;
+});
+let tx=0,ty=0;
+cv.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;e.preventDefault();},{passive:false});
+cv.addEventListener('touchend',e=>{
+  if(!G.running||G.paused)return;
+  const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)<6&&Math.abs(dy)<6)return;
+  let d=Math.abs(dx)>Math.abs(dy)?(dx>0?{x:1,y:0}:{x:-1,y:0}):(dy>0?{x:0,y:1}:{x:0,y:-1});
+  if(G.rev)d={x:-d.x,y:-d.y};if(d.x!==-G.dir.x||d.y!==-G.dir.y)G.nd=d;
+},{passive:false});
+
+// ══ BOOT ══════════════════════════════════════════════
+G.hi=parseInt(ls.g('se_hi')||'0');
+showS('pin');
+</script>
+</body>
+</html>
