@@ -52,3 +52,115 @@ open it in any browser and it works instantly.
 ---
 
 ## 📁 Repository Structure
+snake-elite/
+├── snake_elite.html          ← Entire game (fully self-contained)
+├── SnakeElite.vbs            ← Optional: desktop launcher for Windows
+├── snake_elite_poster.png    ← Game poster / banner
+└── README.md
+
+---
+
+## ▶️ How to Run
+
+### ✅ Method 1 — Run in Browser (Easiest)
+
+> Works on Windows, Mac, Linux — no install needed.
+
+Download snake_elite.html from this repo
+Open the file in Chrome, Edge, or Brave
+Enter PIN: 1147
+Play
+
+
+> ⚠️ **Note:** Firefox may block some Web Audio API features locally.
+> Chrome or Edge recommended for best experience.
+
+---
+
+### ✅ Method 2 — Run as Desktop App (Windows — No Browser UI)
+
+> Launches the game directly as a standalone window — feels like a real installed app.
+
+**Step 1:** Download both files into the same folder:
+snake_elite.html
+SnakeElite.vbs
+
+**Step 2:** Double-click `SnakeElite.vbs`
+
+The game opens in a clean browser window — no tabs, no address bar.
+
+---
+
+### ✅ Method 3 — Share & Play Anywhere (Offline)
+Send snake_elite.html via:
+→ USB drive
+→ WhatsApp (as a document)
+→ Email attachment
+→ Google Drive / any cloud link
+Receiver opens the file in any browser → Enter PIN → Play instantly.
+No internet required on their end.
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Rendering** | HTML5 Canvas API (2D context) |
+| **Audio** | Web Audio API (OscillatorNode + GainNode synthesis) |
+| **Logic** | Vanilla JavaScript — zero frameworks |
+| **Storage** | localStorage (high score persistence) |
+| **Styling** | Pure CSS3 |
+| **Packaging** | Single `.html` file — self-contained |
+
+---
+
+## ⚙️ Configuration
+
+Want to customize the game? Open `snake_elite.html` in any text editor and edit these values:
+
+```javascript
+// 🔒 Change game PIN
+const GAME_PIN = '1147';
+
+// 📐 Change grid dimensions
+const GW = 30, GH = 24;
+
+// 🎮 Level configs — edit LV[] array
+// 💥 Surprise event pool — edit SP[] array
+```
+
+---
+
+## 🎮 Controls
+
+| Key | Action |
+|---|---|
+| `Arrow Keys` | Move snake |
+| `Spacebar` | Pause / Resume |
+| `Enter` | Confirm / Start |
+
+---
+
+## 📸 Preview
+
+> Game running in browser — Level 5 with active Portal surprise event.
+
+![Gameplay Screenshot](snake_elite_facebook_poster_2K.png)
+
+---
+
+## 📄 License
+
+Built and owned by **AutomateIQ Labs**.
+Free to play and share. Not for resale or rebranding.
+
+---
+
+<div align="center">
+
+**Made with 💚 by [Muhammad Antor](https://github.com/automateiqLabs) — AutomateIQ Labs**
+
+*If you enjoyed it, drop a ⭐ — it means a lot.*
+
+</div>
