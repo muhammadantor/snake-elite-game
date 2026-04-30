@@ -170,7 +170,7 @@ Free to play and share. Not for resale or rebranding.
 
 <div align="center">
 
-**Made with 💚 by [Muhammad Antor](https://github.com/automateiqLabs) — AutomateIQ Labs**
+**Made with 💚 by [Muhammad Antor](https://github.com/muhammadantor) — AutomateIQ Labs**
 
 *If you enjoyed it, drop a ⭐ — it means a lot.*
 
