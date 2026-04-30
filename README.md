@@ -155,19 +155,9 @@ const GW = 30, GH = 24;
 
 ## 📸 Preview
 
-## 📸 Screenshots
+> Game running in browser — Level 5 with active Portal surprise event.
 
-### 🏠 Home Screen
-![Home Screen](https://github.com/YOUR_USERNAME/snake-elite/raw/main/screenshots/home.png)
-
-### 🎮 Gameplay — Level 5
-![Gameplay](https://github.com/YOUR_USERNAME/snake-elite/raw/main/screenshots/gameplay.png)
-
-### 💥 Surprise Event — Portal Active
-![Surprise Event](https://github.com/YOUR_USERNAME/snake-elite/raw/main/screenshots/surprise.png)
-
-### 🏆 Game Over Screen
-![Game Over](https://github.com/YOUR_USERNAME/snake-elite/raw/main/screenshots/gameover.png)
+![Gameplay Screenshot](snake_elite_facebook_poster_2K.png)
 
 ---
 
