@@ -2,7 +2,7 @@
 
 # 🐍 Snake Elite
 
-**by [AutomateIQ Labs](https://github.com/automateiqLabs)**
+**by [Muhammad Antor](https://github.com/muhammadantor) | AutomateIQ Labs**
 
 [![Made with Vanilla JS](https://img.shields.io/badge/Made%20with-Vanilla%20JS-f7df1e?style=flat-square&logo=javascript)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![HTML5](https://img.shields.io/badge/HTML5-Canvas%20API-e34f26?style=flat-square&logo=html5)](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
@@ -64,8 +64,8 @@ snake-elite/
 
 | File | Description | Download |
 |---|---|---|
-| `snake_elite.html` | Main game file — entire game inside | [⬇️ Download](https://github.com/YOUR_USERNAME/snake-elite/raw/main/snake_elite.html) |
-| `SnakeElite.vbs` | Windows desktop launcher (optional) | [⬇️ Download](https://github.com/YOUR_USERNAME/snake-elite/raw/main/SnakeElite.vbs) |
+| `snake_elite.html` | Main game file — entire game inside | [⬇️ Download](https://github.com/muhammadantor/snake-elite/raw/main/snake_elite.html) |
+| `SnakeElite.vbs` | Windows desktop launcher (optional) | [⬇️ Download](https://github.com/nuhammadantor/snake-elite/raw/main/SnakeElite.vbs) |
 
 > 💡 **Quick start:** Just download `snake_elite.html` → open in Chrome → Enter PIN `1147` → Play
 
