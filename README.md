@@ -126,23 +126,6 @@ No internet required on their end.
 
 ---
 
-## ⚙️ Configuration
-
-Want to customize the game? Open `snake_elite.html` in any text editor and edit these values:
-
-```javascript
-// 🔒 Change game PIN
-const GAME_PIN = '1147';
-
-// 📐 Change grid dimensions
-const GW = 30, GH = 24;
-
-// 🎮 Level configs — edit LV[] array
-// 💥 Surprise event pool — edit SP[] array
-```
-
----
-
 ## 🎮 Controls
 
 | Key | Action |
