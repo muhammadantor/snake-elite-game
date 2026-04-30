@@ -60,6 +60,17 @@ snake-elite/
 
 ---
 
+## 📥 Download & Play
+
+| File | Description | Download |
+|---|---|---|
+| `snake_elite.html` | Main game file — entire game inside | [⬇️ Download](https://github.com/YOUR_USERNAME/snake-elite/raw/main/snake_elite.html) |
+| `SnakeElite.vbs` | Windows desktop launcher (optional) | [⬇️ Download](https://github.com/YOUR_USERNAME/snake-elite/raw/main/SnakeElite.vbs) |
+
+> 💡 **Quick start:** Just download `snake_elite.html` → open in Chrome → Enter PIN `1147` → Play
+
+---
+
 ## ▶️ How to Run
 
 ### ✅ Method 1 — Run in Browser (Easiest)
